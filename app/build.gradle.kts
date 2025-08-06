@@ -1,3 +1,5 @@
+// ในไฟล์ build.gradle.kts (Module: app)
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -74,4 +76,10 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    // เพิ่มโค้ดบรรทัดนี้เพื่อแก้ปัญหา Unresolved reference 'CalendarMonth'
+    implementation("androidx.compose.material:material-icons-extended:1.5.4")
+
+    // <-- เพิ่มโค้ดบรรทัดนี้เพื่อแก้ปัญหา Unresolved reference 'coil' -->
+    implementation("io.coil-kt:coil-compose:2.6.0")
 }

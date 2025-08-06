@@ -5,8 +5,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,15 +22,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.medireminderapp.ui.theme.MediReminderAppTheme
+import androidx.compose.foundation.text.KeyboardOptions
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(
-    onLoginSuccess: () -> Unit,
-    onRegisterClick: () -> Unit // เพิ่มพารามิเตอร์นี้
-) {
+fun RegistrationScreen(onBack: () -> Unit) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
     val context = LocalContext.current
 
     val greenColor = Color(0xFF4CAF50)
@@ -40,6 +39,19 @@ fun LoginScreen(
             .fillMaxSize()
             .background(greenColor)
     ) {
+        IconButton(
+            onClick = onBack,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(8.dp)
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Back",
+                tint = Color.White
+            )
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -49,12 +61,12 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(64.dp))
             Image(
                 painter = painterResource(id = R.drawable.ic_pill_icon),
-                contentDescription = "Pill Icon",
+                contentDescription = "App Icon",
                 modifier = Modifier.size(80.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "MediReminder",
+                text = "สมัครสมาชิก",
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
@@ -71,7 +83,7 @@ fun LoginScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "เข้าสู่ระบบ",
+                        text = "สร้างบัญชีใหม่",
                         style = MaterialTheme.typography.headlineLarge,
                         fontWeight = FontWeight.Bold
                     )
@@ -92,56 +104,29 @@ fun LoginScreen(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                         modifier = Modifier.fillMaxWidth()
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "ลืมรหัสผ่าน?",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                Toast.makeText(context, "ฟังก์ชันลืมรหัสผ่านยังไม่พร้อมใช้งาน", Toast.LENGTH_SHORT).show()
-                            },
-                        textAlign = TextAlign.End,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary
+                    Spacer(modifier = Modifier.height(16.dp))
+                    OutlinedTextField(
+                        value = confirmPassword,
+                        onValueChange = { confirmPassword = it },
+                        label = { Text("ยืนยันรหัสผ่าน") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(48.dp))
                     Button(
                         onClick = {
-                            if (email.isNotEmpty() && password.isNotEmpty()) {
-                                Toast.makeText(context, "กำลังเข้าสู่ระบบ...", Toast.LENGTH_SHORT).show()
-                                onLoginSuccess()
+                            if (email.isNotEmpty() && password.isNotEmpty() && password == confirmPassword) {
+                                Toast.makeText(context, "กำลังสมัครสมาชิก...", Toast.LENGTH_SHORT).show()
+                                onBack()
                             } else {
-                                Toast.makeText(context, "โปรดกรอกข้อมูลให้ครบถ้วน", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "โปรดกรอกข้อมูลให้ครบถ้วนและรหัสผ่านต้องตรงกัน", Toast.LENGTH_SHORT).show()
                             }
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text("เข้าสู่ระบบ")
+                        Text("สมัครสมาชิก")
                     }
-                }
-            }
-
-            Column(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .padding(bottom = 32.dp),
-                verticalArrangement = Arrangement.Bottom,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "ยังไม่มีบัญชีใช่ไหม? ",
-                        color = Color.White
-                    )
-                    Text(
-                        text = "สร้างบัญชีใหม่",
-                        modifier = Modifier.clickable { onRegisterClick() }, // แก้ไขตรงนี้
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold
-                    )
                 }
             }
         }

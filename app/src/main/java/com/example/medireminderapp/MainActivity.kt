@@ -12,7 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.medireminderapp.ui.theme.MediReminderAppTheme
-
+import androidx.compose.foundation.layout.Box
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,39 +29,45 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// สร้าง Composable function สำหรับจัดการ Navigation ทั้งหมดในแอป
+// ในไฟล์ MainActivity.kt
+
+// ...โค้ดส่วนบน...
+
 @Composable
 fun AppNavigation() {
-    // rememberNavController ใช้เพื่อสร้าง NavController ที่จะควบคุมการเปลี่ยนหน้า
     val navController = rememberNavController()
 
-    // NavHost จะเป็นตัวกำหนดเส้นทาง (Destinations) ของแต่ละหน้า
     NavHost(navController = navController, startDestination = "login") {
-        // กำหนดเส้นทางสำหรับหน้า Login
         composable("login") {
             LoginScreen(
                 onLoginSuccess = {
-                    // เมื่อล็อกอินสำเร็จ จะเปลี่ยนไปที่หน้า Dashboard
                     navController.navigate("dashboard") {
-                        // popUpTo ลบหน้า login ออกจาก stack เพื่อไม่ให้ย้อนกลับมาได้
                         popUpTo("login") { inclusive = true }
                     }
-                }
+                },
+                onRegisterClick = { navController.navigate("registration") }
             )
         }
-        // กำหนดเส้นทางสำหรับหน้า Dashboard
         composable("dashboard") {
-            // เรียกใช้ DashboardScreen และส่งฟังก์ชันสำหรับนำทางไปหน้า AddMedicineScreen
             DashboardScreen(
-                onAddMedicineClick = { navController.navigate("add_medicine") }
+                onAddMedicineClick = { navController.navigate("add_medicine") },
+                onCalendarClick = { navController.navigate("calendar") } // <-- เพิ่มบรรทัดนี้
             )
         }
-        // กำหนดเส้นทางสำหรับหน้าเพิ่มยา
         composable("add_medicine") {
             AddMedicineScreen(
-                // ส่งฟังก์ชัน onBack ไปยัง AddMedicineScreen เพื่อให้สามารถกดปุ่มย้อนกลับได้
                 onBack = { navController.popBackStack() }
             )
+        }
+        composable("registration") {
+            RegistrationScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+        // เพิ่มเส้นทางสำหรับหน้าปฏิทิน
+        composable("calendar") {
+            // หน้าจอสำหรับปฏิทิน (ตอนนี้ใช้ Box เปล่าๆ ไปก่อน)
+            Box(modifier = Modifier.fillMaxSize())
         }
     }
 }
