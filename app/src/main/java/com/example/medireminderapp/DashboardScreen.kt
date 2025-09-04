@@ -1,6 +1,8 @@
+// src/main/java/com/example/medireminderapp/DashboardScreen.kt
 package com.example.medireminderapp
 
 import android.util.Log
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,49 +21,39 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import coil.compose.rememberAsyncImagePainter
 import com.google.firebase.Firebase
-import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.FirebaseFirestore
+import java.util.*
 
-// Data class for a single medicine item
 data class Medicine(
     val id: String = "",
     val name: String = "",
-    val dosage: String = "",
-    val intakeTime: String = "",
-    val isDanger: Boolean = false,
-    val isTaken: Boolean = false,
-    val warning: String = "", // <-- เพิ่ม field สำหรับข้อความเตือน
-    val imageUri: String = "" // <-- เพิ่ม field สำหรับ URI รูปภาพ
+    val dose: String = "",
+    val stock: Int? = null,
+    val imageUrl: String? = null,
+    val creationDate: Date? = null,
+    val expiryDate: Long? = null,
+    val userId: String? = null
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DashboardScreen(
-    onAddMedicineClick: () -> Unit,
-    onCalendarClick: () -> Unit
-) {
+fun DashboardScreen(navController: NavController) {
     var medicines by remember { mutableStateOf(emptyList<Medicine>()) }
-    val db = Firebase.firestore
+    val firestore = FirebaseFirestore.getInstance()
     val greenColor = Color(0xFF4CAF50)
 
-    // ฟังก์ชันสำหรับลบรายการยา
     fun deleteMedicine(medicineId: String) {
-        db.collection("medicines").document(medicineId)
+        firestore.collection("medicines").document(medicineId)
             .delete()
             .addOnSuccessListener { Log.d("DashboardScreen", "DocumentSnapshot successfully deleted!") }
             .addOnFailureListener { e -> Log.w("DashboardScreen", "Error deleting document", e) }
     }
 
-    // ฟังก์ชันสำหรับอัปเดตสถานะการทานยาใน Firestore
-    fun updateMedicineStatus(medicineId: String, newStatus: Boolean) {
-        db.collection("medicines").document(medicineId)
-            .update("isTaken", newStatus)
-            .addOnSuccessListener { Log.d("DashboardScreen", "DocumentSnapshot successfully updated!") }
-            .addOnFailureListener { e -> Log.w("DashboardScreen", "Error updating document", e) }
-    }
-
     LaunchedEffect(Unit) {
-        val medicinesCollection = db.collection("medicines")
+        val medicinesCollection = firestore.collection("medicines")
         medicinesCollection.addSnapshotListener { snapshot, e ->
             if (e != null) {
                 Log.w("DashboardScreen", "Listen failed.", e)
@@ -97,7 +89,7 @@ fun DashboardScreen(
                     }
 
                     FloatingActionButton(
-                        onClick = onAddMedicineClick,
+                        onClick = { navController.navigate("add_medicine_screen") },
                         containerColor = greenColor,
                         shape = CircleShape,
                         modifier = Modifier.size(56.dp)
@@ -157,10 +149,8 @@ fun DashboardScreen(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             items(medicines) { medicine ->
-                                // ส่งข้อมูลที่จำเป็นทั้งหมดไปให้ MedicineCard
                                 MedicineCard(
                                     medicine = medicine,
-                                    onToggle = { newStatus -> updateMedicineStatus(medicine.id, newStatus) },
                                     onDelete = { deleteMedicine(medicine.id) }
                                 )
                             }
@@ -178,7 +168,7 @@ fun DashboardScreen(
             }
 
             FloatingActionButton(
-                onClick = onCalendarClick,
+                onClick = { /* TODO: Implement calendar navigation */ },
                 containerColor = Color.White,
                 shape = CircleShape,
                 modifier = Modifier
@@ -197,7 +187,7 @@ fun DashboardScreen(
 }
 
 @Composable
-fun MedicineCard(medicine: Medicine, onToggle: (Boolean) -> Unit, onDelete: () -> Unit) { // แก้ไขให้รับทั้ง onDelete และ onToggle
+fun MedicineCard(medicine: Medicine, onDelete: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -207,56 +197,43 @@ fun MedicineCard(medicine: Medicine, onToggle: (Boolean) -> Unit, onDelete: () -
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            if (medicine.imageUrl != null && medicine.imageUrl.isNotEmpty()) {
+                Image(
+                    painter = rememberAsyncImagePainter(medicine.imageUrl),
+                    contentDescription = "Medicine image",
+                    modifier = Modifier
+                        .size(60.dp)
+                        .padding(end = 16.dp)
+                )
+            } else {
+                Image(
+                    painter = painterResource(id = R.drawable.ic_launcher_background),
+                    contentDescription = "Medicine image placeholder",
+                    modifier = Modifier
+                        .size(60.dp)
+                        .padding(end = 16.dp)
+                )
+            }
+
             Column(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
                     text = "ชื่อยา: ${medicine.name}",
                     style = MaterialTheme.typography.titleMedium,
-                    color = if (medicine.isDanger) Color.Red else Color.Black
+                    color = Color.Black
                 )
-                Text(text = "ปริมาณ: ${medicine.dosage}")
-                Text(text = "เวลา: ${medicine.intakeTime}")
-                Text(
-                    text = if (medicine.isTaken) "ทานแล้ว" else "ยังไม่ได้ทานยา",
-                    color = if (medicine.isTaken) Color.Gray else Color.Red,
-                    style = MaterialTheme.typography.bodySmall
-                )
+                Text(text = "ปริมาณ: ${medicine.dose}")
+                Text(text = "จำนวนคงเหลือ: ${medicine.stock ?: "ไม่ระบุ"}")
             }
-            // เพิ่ม Row เพื่อจัดเรียงปุ่มสลับและปุ่มลบ
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Switch(
-                    checked = medicine.isTaken,
-                    onCheckedChange = {
-                        // เพิ่ม Log เพื่อช่วยในการตรวจสอบว่าปุ่มถูกกดหรือไม่
-                        Log.d("MedicineCard", "Toggled for medicine ${medicine.id}, new status: $it")
-                        onToggle(it)
-                    },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = Color.White,
-                        checkedTrackColor = Color.Green,
-                        uncheckedThumbColor = Color.White,
-                        uncheckedTrackColor = Color.Red,
-                    )
+
+            IconButton(onClick = onDelete) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete",
+                    tint = Color.Gray
                 )
-                // เพิ่มปุ่มลบกลับมา
-                IconButton(onClick = onDelete) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete",
-                        tint = Color.Gray
-                    )
-                }
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DashboardScreenPreview() {
-    DashboardScreen(onAddMedicineClick = {}, onCalendarClick = {})
 }

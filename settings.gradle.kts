@@ -1,14 +1,10 @@
+// ในไฟล์ settings.gradle.kts
+
 pluginManagement {
     repositories {
-        google {
-            content {
-                includeGroupByRegex("com\\.android.*")
-                includeGroupByRegex("com\\.google.*")
-                includeGroupByRegex("androidx.*")
-            }
-        }
-        mavenCentral()
+        google()
         gradlePluginPortal()
+        mavenCentral()
     }
 }
 dependencyResolutionManagement {
@@ -21,4 +17,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "MediReminderApp"
 include(":app")
- 

@@ -1,26 +1,24 @@
-// ในไฟล์ build.gradle.kts (Module: app)
-
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    // เพิ่ม plugin สำหรับ Compose Compiler เพื่อแก้ปัญหา Unresolved reference
-    id("org.jetbrains.kotlin.plugin.compose")
-    // เพิ่ม plugin สำหรับ Google Services เพื่อให้ใช้ Firebase ได้
     id("com.google.gms.google-services")
 }
 
 android {
     namespace = "com.example.medireminderapp"
-    compileSdk = 36
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.example.medireminderapp"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables {
+            useSupportLibrary = true
+        }
     }
 
     buildTypes {
@@ -33,53 +31,56 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
-
-    kotlin {
-        // ใช้ compilerOptions เพื่อตั้งค่า jvmTarget
-        compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
-            freeCompilerArgs.add("-opt-in=androidx.compose.material3.ExperimentalMaterial3Api")
-        }
+    kotlinOptions {
+        jvmTarget = "1.8"
     }
-
     buildFeatures {
         compose = true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.8"
+    }
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
     }
 }
 
 dependencies {
-    // ใช้ Version Catalog เพื่ออ้างอิง Firebase BoM
-    implementation(platform(libs.firebase.bom))
+    implementation("androidx.core:core-ktx:1.13.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.0")
+    implementation("androidx.activity:activity-compose:1.9.0")
+    implementation(platform("androidx.compose:compose-bom:2024.04.00"))
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.ui:ui-graphics")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.navigation:navigation-compose:2.7.7")
 
-    // ใช้ Version Catalog สำหรับ Firebase Firestore
-    implementation(libs.firebase.firestore)
-
-    // Dependencies ของโปรเจกต์เดิม
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
-    implementation(libs.androidx.navigation.compose)
-
-    // Dependencies สำหรับการทดสอบ (Test Dependencies)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
-
-    // เพิ่มโค้ดบรรทัดนี้เพื่อแก้ปัญหา Unresolved reference 'CalendarMonth'
-    implementation("androidx.compose.material:material-icons-extended:1.5.4")
-
-    // <-- เพิ่มโค้ดบรรทัดนี้เพื่อแก้ปัญหา Unresolved reference 'coil' -->
+    // ไลบรารีสำหรับจัดการรูปภาพ
     implementation("io.coil-kt:coil-compose:2.6.0")
+
+    // Firebase BOM
+    implementation(platform("com.google.firebase:firebase-bom:33.0.0"))
+    // Firebase Authentication
+    implementation("com.google.firebase:firebase-auth-ktx")
+    // Firebase Firestore
+    implementation("com.google.firebase:firebase-firestore-ktx")
+    // Firebase Storage
+    implementation("com.google.firebase:firebase-storage-ktx")
+
+    // Material Icons Extended
+    implementation("androidx.compose.material:material-icons-extended")
+
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation(platform("androidx.compose:compose-bom:2024.04.00"))
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
 }

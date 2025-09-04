@@ -3,6 +3,7 @@ package com.example.medireminderapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -12,62 +13,51 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.medireminderapp.ui.theme.MediReminderAppTheme
-import androidx.compose.foundation.layout.Box
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
+
 class MainActivity : ComponentActivity() {
+
+    private lateinit var auth: FirebaseAuth
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        auth = Firebase.auth
         setContent {
             MediReminderAppTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AppNavigation()
+                    MyApp(auth)
                 }
             }
         }
     }
 }
 
-// ในไฟล์ MainActivity.kt
-
-// ...โค้ดส่วนบน...
-
 @Composable
-fun AppNavigation() {
+fun MyApp(auth: FirebaseAuth) {
     val navController = rememberNavController()
+    val startDestination = if (auth.currentUser != null) "dashboard_screen" else "login_screen"
 
-    NavHost(navController = navController, startDestination = "login") {
-        composable("login") {
+    NavHost(navController = navController, startDestination = startDestination) {
+        composable("login_screen") {
             LoginScreen(
-                onLoginSuccess = {
-                    navController.navigate("dashboard") {
-                        popUpTo("login") { inclusive = true }
-                    }
-                },
-                onRegisterClick = { navController.navigate("registration") }
+                navController = navController,
+                auth = auth
             )
         }
-        composable("dashboard") {
-            DashboardScreen(
-                onAddMedicineClick = { navController.navigate("add_medicine") },
-                onCalendarClick = { navController.navigate("calendar") } // <-- เพิ่มบรรทัดนี้
-            )
+        composable("registration_screen") {
+            RegistrationScreen(navController = navController)
         }
-        composable("add_medicine") {
-            AddMedicineScreen(
-                onBack = { navController.popBackStack() }
-            )
+        composable("add_medicine_screen") {
+            AddMedicineScreen(navController = navController)
         }
-        composable("registration") {
-            RegistrationScreen(
-                onBack = { navController.popBackStack() }
-            )
-        }
-        // เพิ่มเส้นทางสำหรับหน้าปฏิทิน
-        composable("calendar") {
-            // หน้าจอสำหรับปฏิทิน (ตอนนี้ใช้ Box เปล่าๆ ไปก่อน)
-            Box(modifier = Modifier.fillMaxSize())
+        composable("dashboard_screen") {
+            DashboardScreen(navController = navController)
         }
     }
 }
