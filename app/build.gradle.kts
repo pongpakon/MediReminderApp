@@ -60,9 +60,22 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.navigation:navigation-compose:2.7.7")
+    implementation("androidx.compose.material3:material3-window-size-class")
+    implementation("androidx.compose.material:material:1.6.8")
+    implementation("androidx.compose.material3:material3:1.2.1")
+    implementation("androidx.constraintlayout:constraintlayout-compose:1.0.1")
+    implementation(platform("com.google.firebase:firebase-bom:32.3.1"))
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-database")
+
 
     // ไลบรารีสำหรับจัดการรูปภาพ
     implementation("io.coil-kt:coil-compose:2.6.0")
+// สำหรับ SwipeToDismissBox ใน Material3
+    implementation("androidx.compose.material3:material3:1.2.1")
+
+    // สำหรับ SwipeToDismissBoxState
+    implementation("androidx.compose.material3:material3-window-size-class:1.2.1")
 
     // Firebase BOM
     implementation(platform("com.google.firebase:firebase-bom:33.0.0"))
